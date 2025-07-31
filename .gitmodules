@@ -1,6 +1,6 @@
 [submodule "libraries/m-utils"]
 	path = libraries/m-utils
-	url = ../m-Utils.git
+	url = https://github.com/iff-gsc/m-Utils.git
 [submodule "libraries/MatlabInputRelease"]
 	path = libraries/MatlabInputRelease
-	url = ../MatlabInputRelease.git
+	url = https://github.com/iff-gsc/MatlabInputRelease.git
