@@ -22,10 +22,10 @@ function fuselage = fuselageSetGeometryFromCpacs( fuselage, tiglHandle, fuse_UID
 % *************************************************************************
 
 % get fuselage index
-fuse_index = tiglFuselageGetIndex( tiglHandle, fuse_UID );
+fuse_index = mtiglFuselageGetIndex( tiglHandle, fuse_UID );
 
 % compute fuselage center line and circumfence at sections
-fuse_num_sections = tiglFuselageGetSectionCount(tiglHandle,fuse_index);
+fuse_num_sections = mtiglFuselageGetSectionCount(tiglHandle,fuse_index);
 points_right = zeros(3,fuse_num_sections);
 points_left = zeros(3,fuse_num_sections);
 circumfence = zeros(1,fuse_num_sections);
@@ -38,13 +38,13 @@ for i=1:fuse_num_sections
         idx = i-1;
     end
     [points_right(1,i),points_right(2,i),points_right(3,i)] = ...
-        tiglFuselageGetPoint(tiglHandle,fuse_index,idx,eta,0);
+        mtiglFuselageGetPoint(tiglHandle,fuse_index,idx,eta,0);
     [points_left(1,i),points_left(2,i),points_left(3,i)] = ...
-        tiglFuselageGetPoint(tiglHandle,fuse_index,idx,eta,0.5);
+        mtiglFuselageGetPoint(tiglHandle,fuse_index,idx,eta,0.5);
     if i == 1
         eta = 0.2;
     end
-    circumfence(i) = tiglFuselageGetCircumference(tiglHandle,fuse_index,idx,eta);
+    circumfence(i) = mtiglFuselageGetCircumference(tiglHandle,fuse_index,idx,eta);
 end
 
 % assume circle cross section

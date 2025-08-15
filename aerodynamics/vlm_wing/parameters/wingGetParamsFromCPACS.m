@@ -10,13 +10,13 @@ function [prm] = wingGetParamsFromCPACS( tiglHandle, wing_idx, controls_filename
 
 %% Get number of segments
 
-num_segments = tiglWingGetSegmentCount( tiglHandle, wing_idx );
+num_segments = mtiglWingGetSegmentCount( tiglHandle, wing_idx );
 
-wingUID = tiglWingGetUID( tiglHandle, wing_idx );
+wingUID = mtiglWingGetUID( tiglHandle, wing_idx );
 
-prm.is_symmetrical = tiglWingGetSymmetry(tiglHandle,wing_idx)==2;
+prm.is_symmetrical = mtiglWingGetSymmetry(tiglHandle,wing_idx)==2;
 
-prm.b = tiglWingGetSpan( tiglHandle, wingUID );
+prm.b = mtiglWingGetSpan( tiglHandle, wingUID );
 
 % init variable
 prm.eta_segments_wing = zeros( 1, num_segments + 1 );
@@ -37,23 +37,23 @@ camber_pos = zeros( 1, num_segments+1 );
 
 for i = 0:num_segments
     if i == 0
-        [x_lead,y_lead,z_lead] = tiglWingGetChordPoint_frd( tiglHandle, wing_idx, i+1, 0, 0 );
-        [a,b,c]=tiglWingGetUpperPoint(tiglHandle,wing_idx,i+1,0,0);
-        [x_25,y_25,z_25] = tiglWingGetChordPoint_frd( tiglHandle, wing_idx, i+1, 0, 0.25 );
-        [x_75,y_75,z_75] = tiglWingGetChordPoint_frd( tiglHandle, wing_idx, i+1, 0, 0.75 );
-        [x_trail,y_trail,z_trail] = tiglWingGetChordPoint_frd( tiglHandle, wing_idx, i+1, 0, 1 );
-        [cam_rel,cam_pos] = tiglWingGetCamber( tiglHandle, wing_idx, i+1, 0 );
+        [x_lead,y_lead,z_lead] = mtiglWingGetChordPoint_frd( tiglHandle, wing_idx, i+1, 0, 0 );
+        [a,b,c]=mtiglWingGetUpperPoint(tiglHandle,wing_idx,i+1,0,0);
+        [x_25,y_25,z_25] = mtiglWingGetChordPoint_frd( tiglHandle, wing_idx, i+1, 0, 0.25 );
+        [x_75,y_75,z_75] = mtiglWingGetChordPoint_frd( tiglHandle, wing_idx, i+1, 0, 0.75 );
+        [x_trail,y_trail,z_trail] = mtiglWingGetChordPoint_frd( tiglHandle, wing_idx, i+1, 0, 1 );
+        [cam_rel,cam_pos] = mtiglWingGetCamber( tiglHandle, wing_idx, i+1, 0 );
         % The norm vector seems to be not correct. It seems that the
         % "chord" in the tiglWingGetChordNormal function is not a straight
         % line from the leading edge to the trailing edge.
 %         [ prm.norm_vec(1,i+1), prm.norm_vec(2,i+1), prm.norm_vec(3,i+1) ] = ...
 %             tiglWingGetChordNormal_frd(tiglHandle,wing_idx,i+1,0,0.25);
     else        
-        [x_lead,y_lead,z_lead] = tiglWingGetChordPoint_frd( tiglHandle, wing_idx, i, 1, 0 );
-        [x_25,y_25,z_25] = tiglWingGetChordPoint_frd( tiglHandle, wing_idx, i, 1, 0.25 );
-        [x_75,y_75,z_75] = tiglWingGetChordPoint_frd( tiglHandle, wing_idx, i, 1, 0.75 );
-        [x_trail,y_trail,z_trail] = tiglWingGetChordPoint_frd( tiglHandle, wing_idx, i, 1, 1 );
-        [cam_rel,cam_pos] = tiglWingGetCamber( tiglHandle, wing_idx, i, 1 );
+        [x_lead,y_lead,z_lead] = mtiglWingGetChordPoint_frd( tiglHandle, wing_idx, i, 1, 0 );
+        [x_25,y_25,z_25] = mtiglWingGetChordPoint_frd( tiglHandle, wing_idx, i, 1, 0.25 );
+        [x_75,y_75,z_75] = mtiglWingGetChordPoint_frd( tiglHandle, wing_idx, i, 1, 0.75 );
+        [x_trail,y_trail,z_trail] = mtiglWingGetChordPoint_frd( tiglHandle, wing_idx, i, 1, 1 );
+        [cam_rel,cam_pos] = mtiglWingGetCamber( tiglHandle, wing_idx, i, 1 );
 %         [ prm.norm_vec(1,i+1), prm.norm_vec(2,i+1), prm.norm_vec(3,i+1) ] = ...
 %             tiglWingGetChordNormal_frd(tiglHandle,wing_idx,i,1,0.25);
     end
@@ -82,7 +82,7 @@ for i = 0:num_segments
     end
     
     % not used yet
-    section{i+1,:} = tiglWingGetProfileName(tiglHandle,wing_idx,i+1,1);
+%     section{i+1,:} = tiglWingGetProfileName(tiglHandle,wing_idx,i+1,1);
     
 end
 
@@ -131,21 +131,21 @@ cntrl_inp2_idx_wo_zero 	= prm.control_input_index(2,prm.control_input_index(2,:)
 prm.num_lads            = length(unique(cntrl_inp2_idx_wo_zero));
 
 
-function [x_frd,y_frd,z_frd] = tiglWingGetChordPoint_frd( handle, wing_idx, segment_idx, eta, xsi )
-    [x_bru,y_bru,z_bru] = tiglWingGetChordPoint( handle, wing_idx, segment_idx, eta, xsi );
+function [x_frd,y_frd,z_frd] = mtiglWingGetChordPoint_frd( handle, wing_idx, segment_idx, eta, xsi )
+    [x_bru,y_bru,z_bru] = mtiglWingGetChordPoint( handle, wing_idx, segment_idx, eta, xsi );
     x_frd = -x_bru;
     y_frd = y_bru;
     z_frd = -z_bru;
 end
 
-function [x_frd,y_frd,z_frd] = tiglWingGetChordNormal_frd( handle, wing_idx, segment_idx, eta, xsi )
-    [x_bru,y_bru,z_bru] = tiglWingGetChordNormal( handle, wing_idx, segment_idx, eta, xsi );
-    x_frd = -x_bru;
-    y_frd = y_bru;
-    z_frd = -z_bru;
-end
+% function [x_frd,y_frd,z_frd] = tiglWingGetChordNormal_frd( handle, wing_idx, segment_idx, eta, xsi )
+%     [x_bru,y_bru,z_bru] = tiglWingGetChordNormal( handle, wing_idx, segment_idx, eta, xsi );
+%     x_frd = -x_bru;
+%     y_frd = y_bru;
+%     z_frd = -z_bru;
+% end
 
-function [camber_rel,camber_pos] = tiglWingGetCamber( tiglHandle, wing_idx, segment_idx, eta )
+function [camber_rel,camber_pos] = mtiglWingGetCamber( tiglHandle, wing_idx, segment_idx, eta )
     len_cam = 101;
     xu = zeros(1,len_cam);
     zu = zeros(1,len_cam);
@@ -154,8 +154,8 @@ function [camber_rel,camber_pos] = tiglWingGetCamber( tiglHandle, wing_idx, segm
     xsi_vec = linspace(0,1,len_cam);
     for ii = 1:len_cam
         xsi = xsi_vec(ii);
-        [xu(ii),~,zu(ii)] = tiglWingGetUpperPoint( tiglHandle, wing_idx, segment_idx, eta, xsi );
-        [xl(ii),~,zl(ii)] = tiglWingGetLowerPoint( tiglHandle, wing_idx, segment_idx, eta, xsi );
+        [xu(ii),~,zu(ii)] = mtiglWingGetUpperPoint( tiglHandle, wing_idx, segment_idx, eta, xsi );
+        [xl(ii),~,zl(ii)] = mtiglWingGetLowerPoint( tiglHandle, wing_idx, segment_idx, eta, xsi );
     end
     chord_length = norm( [xu(1);zu(1)] - [xu(end);zu(end)], 2 );
     xm = xu(1) + xsi_vec * (xu(end)-xu(1));
