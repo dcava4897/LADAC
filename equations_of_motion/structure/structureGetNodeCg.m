@@ -20,18 +20,19 @@ function cg_node = structureGetNodeCg( structure, idx, varargin )
 % *************************************************************************
 
 % to do: consider rotation
-if isempty(varargin)
-    node_rotation = zeros(size(structure.xyz));
-else
-    node_rotation = varargin{1};
-end
+% if isempty(varargin)
+%     node_rotation = zeros(size(structure.xyz));
+% else
+%     node_rotation = varargin{1};
+% end
 
 DOF = 6;
 len_idx = length( idx );
 cg_node = zeros(3,len_idx);
 m_node = structureGetNodeMass(structure,idx);
 for i = 1:len_idx
-    idx_M = (4+(idx(i)-1)*DOF):(6+(idx(i)-1)*DOF);
+%     idx_M = (4+(idx(i)-1)*DOF):(6+(idx(i)-1)*DOF);
+    idx_M = structure.idx_dof_struct((4+(idx(i)-1)*DOF):(6+(idx(i)-1)*DOF));
     coupling_mat = structure.M(idx_M,idx_M-3);
     coupling_x = coupling_mat(2,3);
     coupling_y = coupling_mat(1,3);

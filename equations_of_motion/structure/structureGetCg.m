@@ -30,22 +30,27 @@ function xyz_cg = structureGetCg( structure, varargin )
 %   Copyright (C) 2022 TU Braunschweig, Institute of Flight Guidance
 % *************************************************************************
 
-node_rotation = zeros(size(structure.xyz));
+% node_rotation = zeros(size(structure.xyz));
+node_rotation = zeros(size(structure.xyz(:,structure.idx_node_struct)));
 if isempty(varargin)
-    node_deflection = zeros(size(structure.xyz));
+%     node_deflection = zeros(size(structure.xyz));
+    node_deflection = zeros(size(structure.xyz(:,structure.idx_node_struct)));
 else
     node_deflection = varargin{1};
     if length(varargin) > 1
         node_rotation(:) = varargin{2};
     end
 end
-
+ 
 DOF         = 6;
-n_nodes     = length( structure.M )/DOF;
+% n_nodes     = length( structure.M )/DOF;
+n_nodes     = length( structure.idx_node_struct );
 mass_vector = structureGetNodeMass( structure, 1:n_nodes );
 mass_total  = structureGetTotalMass( structure );
-pos_node_cg = structure.xyz + node_deflection + structureGetNodeCg( ...
-                structure, 1:n_nodes, node_rotation );
+% pos_node_cg = structure.xyz + node_deflection + structureGetNodeCg( ...
+%                 structure, 1:n_nodes, node_rotation );
+pos_node_cg = structure.xyz(:,structure.idx_node_struct) + node_deflection + ...
+                structureGetNodeCg( structure, 1:n_nodes, node_rotation );
 x_cg        = sum( mass_vector .* pos_node_cg(1,:) ) / mass_total;
 y_cg        = sum( mass_vector .* pos_node_cg(2,:) ) / mass_total;
 z_cg        = sum( mass_vector .* pos_node_cg(3,:) ) / mass_total;

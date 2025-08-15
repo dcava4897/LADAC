@@ -17,8 +17,9 @@ function mass_total = structureGetTotalMass( structure )
 %   Copyright (C) 2022 TU Braunschweig, Institute of Flight Guidance
 % *************************************************************************
 
-DOF         = 6;
-n_nodes     = length( structure.M )/DOF;
+% DOF         = 6;
+% n_nodes     = length( structure.M )/DOF;
+n_nodes     = length( structure.idx_node_struct );
 mass_vector = structureGetNodeMass( structure, [1:n_nodes] );
 mass_total = sum( mass_vector );
 

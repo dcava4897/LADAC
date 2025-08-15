@@ -39,6 +39,11 @@ structure.M     = sign_matrix .* pch_contents.M;
 structure.K     = sign_matrix .* pch_contents.K;
 structure.xyz   = axis_reversed.*[ nodesPos.x'; nodesPos.y'; nodesPos.z' ];
 
+% added for compatiblity with NeoCASS functions
+structure.idx_node_struct = [1:length(structure.xyz)]';
+structure.idx_node_rbe = [];
+structure.idx_dof_struct = [1:(6*length(structure.xyz))]';
+
 disp('structureCreateFromNastran: Finished!')
 
 end

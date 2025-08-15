@@ -25,7 +25,8 @@ DOF = 6;
 len_idx = length( idx );
 I_node = zeros(3,3,len_idx);
 for i = 1:len_idx
-    idx_M = (4+(idx(i)-1)*DOF):(6+(idx(i)-1)*DOF);
+%     idx_M = (4+(idx(i)-1)*DOF):(6+(idx(i)-1)*DOF);
+    idx_M = structure.idx_dof_struct((4+(idx(i)-1)*DOF):(6+(idx(i)-1)*DOF));
     I_node(:,:,i) = structure.M(idx_M,idx_M);
 end
 

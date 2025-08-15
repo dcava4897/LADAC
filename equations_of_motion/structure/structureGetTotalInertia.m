@@ -20,7 +20,8 @@ function I = structureGetTotalInertia( structure ) %#codegen
 % *************************************************************************
 
 xyz_cg      = structureGetCg( structure );
-n_nodes     = length( structure.xyz(1,:) );
+% n_nodes     = length( structure.xyz(1,:) );
+n_nodes     = length( structure.xyz(1,structure.idx_node_struct) );
 
 I = zeros( 3, 3 );
 for i = 1:n_nodes

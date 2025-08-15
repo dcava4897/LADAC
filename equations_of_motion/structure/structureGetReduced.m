@@ -34,7 +34,7 @@ function [ structure_red, omega_red, V, D ] = structureGetReduced( structure, N 
 % *************************************************************************
 
 % get eigenvalues of eq. (3) in [1], eigenvalues (omega^2) are in (rad/s)^2
-[V,D] = eig( structure.K, structure.M );
+[V,D] = eig( full(structure.K), full(structure.M) );
 
 % convert diagonal matrix of eigenvalues into a vector of eigenfrequencies
 % in rad/s
@@ -59,8 +59,9 @@ structure_red.K = Kr;
 structure_red.M = Mr;
 structure_red.d = zeros(DOF+N,1);
 structure_red.M_inv = pinv( structure_red.M );
-structure_red.xyz = structure.xyz;
-structure_red.modal.T = T;
+% structure_red.xyz = structure.xyz;
+structure_red.xyz = structure.xyz(:,structure.idx_node_struct); % Removes constrained nodes
+structure_red.modal.T = T(structure.idx_dof_struct,:); % Removes DOFs from partially constrained nodes
 structure_red.modal.omega_red = omega_red;
 
 end
