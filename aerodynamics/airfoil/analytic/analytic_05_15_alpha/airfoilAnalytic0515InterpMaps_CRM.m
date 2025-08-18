@@ -24,8 +24,8 @@ for i_file = 1:numel(file_names)
     
     airfoil.type = 'interp';
     
-    file_save = [file_names(i_file).name];
-    file_save = strrep(file_save, '.mat', '_params.mat');
+    file_save = ['airfoilAnalytic0515_params_', file_names(i_file).name];
+%     file_save = strrep(file_save, '.mat', '_params.mat');
     
     save(['CRM9', filesep, file_save], 'airfoil');
     
