@@ -18,7 +18,8 @@ c_L_alpha = 0; alpha_inf_0 = 0; c_L_alpha_max = 0; alpha_0 = 0; fcl = 0;
 switch wing_config.airfoil_method
     case 'analytic'
         % get coefficients of analytic functions for different Mach numbers
-        fcl = airfoilAnalytic0515Ma( wing_airfoil.analytic.wcl, wing_state.aero.circulation.Ma );
+        % fcl = airfoilAnalytic0515Ma( wing_airfoil.analytic.wcl, wing_state.aero.circulation.Ma );
+        fcl = airfoilAnalytic0515Ma( wing_airfoil.analytic, wing_state.aero.circulation.Ma, 'cl' );
         % get points on lift curve
         [c_L_alpha_deg,alpha_0] = airfoilAnalytic0515ClAlphaMax( fcl, wing_state.aero.circulation.Ma );
         c_L_alpha = rad2deg(c_L_alpha_deg);

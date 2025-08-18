@@ -20,7 +20,8 @@ V_inf_local = beta2localInflow( M_rot_x, beta_deg, wing.n_panel, n_panel_x );
     V_inf_local, wing.state.geometry, wake, Ma, wing.config.is_unsteady );
 
 if strcmp(wing.config.airfoil_method,'analytic')
-    fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, Ma );
+%     fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, Ma );
+    fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic, Ma, 'cl' );
     cla = rad2deg(fcl(2,:));
 elseif strcmp(wing.config.airfoil_method,'simple')
     cla = repmat(wing.airfoil.simple.c_L_alpha,1,wing.n_panel);

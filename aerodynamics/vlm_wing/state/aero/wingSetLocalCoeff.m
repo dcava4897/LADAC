@@ -50,11 +50,14 @@ if ~wing.config.is_unsteady
     switch wing.config.airfoil_method
         case 'analytic'
             % drag coefficient
-            fcd = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcd, wing.state.aero.circulation.Ma );
+            % fcd = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcd, wing.state.aero.circulation.Ma );
+            fcd = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cd' );
             c_D(:) = airfoilAnalytic0515AlCd( fcd, rad2deg(wing.state.aero.circulation.alpha_eff ) );
             % local airfoil pitching moment coefficient w.r.t. local c/4
-            fcm = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcm, wing.state.aero.circulation.Ma );
-            fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, wing.state.aero.circulation.Ma );
+%             fcm = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcm, wing.state.aero.circulation.Ma );
+            fcm = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cm' );
+            % fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, wing.state.aero.circulation.Ma );
+            fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cl' );
             [ c_L_alpha, alpha_0 ] = airfoilAnalytic0515ClAlphaMax( fcl, wing.state.aero.circulation.Ma );
             f_st = airfoilDynStallFst( wing.state.aero.circulation.c_L, c_L_alpha, rad2deg( wing.state.aero.circulation.alpha_eff ) - alpha_0 );
             wing.state.aero.coeff_loc.c_m_airfoil(:) = mean( airfoilAnalyticBlCm( fcm, f_st, wing.state.aero.circulation.c_L ), 3 );

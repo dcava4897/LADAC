@@ -143,7 +143,8 @@ while ~converged && wing.state.aero.circulation.num_iter < num_iter_max
         switch wing.config.airfoil_method
             case 'analytic'
                 % clean airfoil lift
-                fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, wing.state.aero.circulation.Ma );
+                % fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, wing.state.aero.circulation.Ma );
+                fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cl' );
                 wing.state.aero.circulation.cla = rad2deg(fcl(2,:));
                 
                 % get points on lift curve
