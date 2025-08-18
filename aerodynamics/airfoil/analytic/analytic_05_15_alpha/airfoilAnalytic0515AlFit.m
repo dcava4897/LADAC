@@ -1,4 +1,4 @@
-function [fcl,fcd,fcm] = airfoilAnalytic0515AlFit(alpha_deg,Ma,c_L,c_D,c_m,varargin)
+function [fcl,fcd,fcm, info] = airfoilAnalytic0515AlFit(alpha_deg,Ma,c_L,c_D,c_m,varargin)
 % airfoilAnalytic0515AlFit performs an analytic fit of airfoil coefficients
 % data for different angles of attack and Mach numbers.
 %   For the analytic fit, the analytic function airfoilAnalytic0515De is
@@ -57,6 +57,11 @@ function [fcl,fcd,fcm] = airfoilAnalytic0515AlFit(alpha_deg,Ma,c_L,c_D,c_m,varar
 %   Copyright (C) 2020-2022 Yannic Beyer
 %   Copyright (C) 2022 TU Braunschweig, Institute of Flight Guidance
 % *************************************************************************
+% 
+% Modified July/August 2025 by Davide Cavaliere 
+% - Outputs function handles so that they can be stored retrieved later.
+% - Modifies
+
 
 if ~isempty(varargin)
     visualize = varargin{1};
@@ -70,6 +75,22 @@ c_L = c_L(:)';
 c_D = c_D(:)';
 c_m = c_m(:)';
 
+
+%%% Remove NaNs from data (incompatible with lsqcurvefit)
+% Nan points should be the same for c_L/c_D/c_m, but we will check them all
+% just in case
+idx_nan = find(isnan(c_L) | isnan(c_D) | isnan(c_m));
+alpha_deg(idx_nan) = [];
+c_L(idx_nan) = [];
+c_D(idx_nan) = [];
+c_m(idx_nan) = [];
+
+%%% Test: remove AoA below -6 and above +15, maybe a better fit
+idx_alpha_rm = find(alpha_deg >16 | alpha_deg < -6);
+alpha_deg(idx_alpha_rm) = [];
+c_L(idx_alpha_rm) = [];
+c_D(idx_alpha_rm) = [];
+c_m(idx_alpha_rm) = [];
 
 % add help data if there is no data for low angles of attack
 alpha_min = min(alpha_deg);
@@ -90,9 +111,10 @@ if alpha_min > -1
     
     c_l_ext = [ c_l_ext2, c_l_ext3 ];
     alpha_deg_cl_ext = [ alpha_deg_cl_ext2, alpha_deg_cl_ext3 ];
+else
+    c_l_ext = c_L;
+    alpha_deg_cl_ext = alpha_deg;
 end
-
-
 
 
 % add data if not enough data points are given
@@ -133,7 +155,8 @@ liftCurve = @airfoilAnalytic0515AlCl;
 dragCurve = @airfoilAnalytic0515AlCdNorm;
 
 momentCurve = @airfoilAnalyticBlCm;
-
+% momentCurve = @airfoilAnalytic0515AlCm
+%%
 
 % lift coefficient options
 optsCl.Lower = [ -7 0.03 -1.5 4 0.66 0.2 ]';
@@ -148,7 +171,7 @@ xy = grid2Coordinates( alpha_deg_cl_ext, Ma )';
 fcl = lsqcurvefit( liftCurve, optsCl.StartPoint, xy, c_l_ext, optsCl.Lower, optsCl.Upper, options );
 
 
-
+%%
 % add help data if there is no data for low angles of attack
 alpha_min = min(alpha_deg_cd);
 [~,alpha_0] = airfoilAnalytic0515ClAlphaMax( fcl, Ma );
@@ -160,21 +183,28 @@ else
     alpha_deg_cd_ext = alpha_deg_cd;
 end
 
-
+%%
 % drag coefficient options
-optsCd.Lower = [ 1e-5 1e-5 -5 0.1 3 0.5 ]';
-optsCd.StartPoint = [ 0.001 0.0001 -1 1 10 1.5 ]';
-optsCd.Upper = [ 0.1 0.0005 -0.1 10 25 3 ]';
+optsCd.Lower =      [ 1e-5   1e-5      -5    0.1  3     0.5 ]';
+optsCd.StartPoint = [ 0.001  0.0001     -1   1    10    1.5 ]';
+optsCd.Upper =      [ 0.1    1e-2    -0.1  20   25    5 ]';
+% optsCd.Upper =      [ 0.1    0.0005    -0.1  10   25    3 ]';
 
 % fit drag coefficient
 x = alpha_deg_cd_ext(:)';
 fcd = lsqcurvefit( @(xxx,data) dragCurve(xxx,data,alpha_deg_cd_ext,c_d_ext), optsCd.StartPoint, x, ones( size(c_d_ext) ), optsCd.Lower, optsCd.Upper, options );
 
-
+%%
 % pitching moment coefficient options
-optsCm.Lower = [ -0.3 -0.2 -0.6 0 0.2 ]';
-optsCm.StartPoint = [ 0 0 0 0.03 1 ]';
-optsCm.Upper = [ 0.3 0.2 0.2*0 0.7 5 ]';
+optsCm.Lower =      [ -0.3  -0.2    -0.6    0       0.2 ]';
+optsCm.StartPoint = [ 0     0       0       0.03    1 ]';
+optsCm.Upper =      [ 0.3   0.2     0.2   0.7     5 ]';
+% optsCm.Lower =      2*[ -0.3  -0.2    -0.6    0       0.2 ]';
+% optsCm.StartPoint = [ 0     0       0       0.03    1 ]';
+% optsCm.Upper =      2*[ 0.3   0.2     0.2*0   0.7     5 ]';
+% optsCm.Lower =      -Inf*[ 1e-5   1e-5      5    0.1  3     0.5 ]';
+% optsCm.StartPoint = [ 0.001  0.0001     0   0   0    0 ]';
+% optsCm.Upper =      Inf*[ 0.1    1e-2    0.1  20   25    5 ]';
 
 % fit pitching moment coefficient
 [c_L_alpha_max,alpha_0] = airfoilAnalytic0515ClAlphaMax( fcl, Ma );
@@ -183,11 +213,17 @@ c_L = airfoilAnalytic0515AlCl( fcl, grid2Coordinates( alpha_deg_cm, Ma )' );
 % c_L = c_L_alpha_max * ( alpha_deg_cm - alpha_0 );
 % fcm = lsqcurvefit( momentCurve, optsCm.StartPoint, alpha_deg_cm, c_m, optsCm.Lower, optsCm.Upper, options );
 fcm = lsqcurvefit(  @(xxx,data) momentCurve(xxx,data,c_L), optsCm.StartPoint, f_st, c_m, optsCm.Lower, optsCm.Upper, options );
+% fcm = lsqcurvefit(  @(xxx,alpha_deg_cm) momentCurve(xxx,alpha_deg_cm), optsCm.StartPoint, f_st, c_m, optsCm.Lower, optsCm.Upper, options );
+%% Store curve function handles
 
+info.liftCurve = liftCurve;
+info.dragCurve = dragCurve;
+info.momentCurve = momentCurve;
 
+%% Plot results
 if visualize
     % plot result
-    alpha_eval = -10:0.1:15;
+    alpha_eval = -10:0.1:16;%-10:0.1:15;
 
     figure
     subplot(2,2,1)
@@ -218,6 +254,7 @@ if visualize
 %     c_m_eval = airfoilAnalyticBlCm(fcm,f_st_eval,c_L_eval);
 %     c_L_lin = c_L_alpha_max * ( alpha_eval - alpha_0 )';
     c_m_eval = airfoilAnalyticBlCm(fcm,f_st_eval,c_L_eval);
+%     c_m_eval = momentCurve(fcm, alpha_eval);
     plot(alpha_eval,c_m_eval);
     grid on
     xlabel('Angle of attack, deg')
