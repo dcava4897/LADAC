@@ -24,12 +24,12 @@ switch file_ext
         run( filename );
         
     case '.mat' % load MAT file to load parameters
-        load( filename );
+        load( filename, 'airfoil' );
     otherwise % Extension not provided
         if ~isempty(which(filename)) % which returns empty for a MAT-file, but returns a path for a function
             run( filename );
         else
-            load( filename );
+            load( filename, 'airfoil' );
         end
 end
 
@@ -48,8 +48,12 @@ switch airfoil.type
         for i_par = 1:size(airfoil.fclv,1)
             airfoil.Fclv{i_par,1}  = griddedInterpolant(airfoil.grid.ScheduledVariables.Mach, airfoil.fclv(i_par,:),...
                                 'linear', 'nearest');
+        end
+        for i_par = 1:size(airfoil.fcmv,1)
             airfoil.Fcmv{i_par,1}  = griddedInterpolant(airfoil.grid.ScheduledVariables.Mach, airfoil.fcmv(i_par,:),...
                                 'linear', 'nearest');
+        end
+        for i_par = 1:size(airfoil.fcdv,1)
             airfoil.Fcdv{i_par,1}  = griddedInterpolant(airfoil.grid.ScheduledVariables.Mach, airfoil.fcdv(i_par,:),...
                                 'linear', 'nearest');
         end

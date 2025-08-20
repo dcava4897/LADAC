@@ -21,10 +21,17 @@ V_inf_local = beta2localInflow( M_rot_x, beta_deg, wing.n_panel, n_panel_x );
 
 if strcmp(wing.config.airfoil_method,'analytic')
 %     fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, Ma );
-    fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic, Ma, 'cl' );
+    fcl = zeros(6, numel(Ma)); %TODO: permanent fcl matrix in wing.aero?
+    for i_seg = 1:numel(Ma)
+        i_af = wing.geometry.segments.type_local(i_seg)+1;
+        % Assume Ma is in same order as wing panels
+        if i_af~=0
+            fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cl' );
+        end
+    end
     cla = rad2deg(fcl(2,:));
 elseif strcmp(wing.config.airfoil_method,'simple')
-    cla = repmat(wing.airfoil.simple.c_L_alpha,1,wing.n_panel);
+    cla = repmat(wing.airfoil(1).simple.c_L_alpha,1,wing.n_panel);
 else
     error('Airfoil method not supported.')
 end

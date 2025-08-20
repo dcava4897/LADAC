@@ -111,9 +111,9 @@ switch fun_type
                 field_name = 'Fcdv';
         end
         
-        fMa = zeros(numel(airfoil_anl.(field_name),num_inputs));
-        for i_fun = 1:numel(airfoil.anl.(field_name))
-            fMa(i_fun) = aifoil.anl.(field_name){i_fun}(Ma);
+        fMa = zeros(numel(airfoil_anl.(field_name)),num_inputs);
+        for i_fun = 1:numel(airfoil_anl.(field_name))
+            fMa(i_fun,:) = airfoil_anl.(field_name){i_fun}(Ma);
         end
         
         

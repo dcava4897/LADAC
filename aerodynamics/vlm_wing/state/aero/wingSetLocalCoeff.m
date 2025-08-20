@@ -49,15 +49,32 @@ if ~wing.config.is_unsteady
     % 'analytic' does not
     switch wing.config.airfoil_method
         case 'analytic'
-            % drag coefficient
+            % Drag coefficient
             % fcd = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcd, wing.state.aero.circulation.Ma );
-            fcd = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cd' );
-            c_D(:) = airfoilAnalytic0515AlCd( fcd, rad2deg(wing.state.aero.circulation.alpha_eff ) );
+            fcd = zeros(6, numel(Ma)); %TODO: permanent fcd matrix in wing.aero?
+            
             % local airfoil pitching moment coefficient w.r.t. local c/4
 %             fcm = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcm, wing.state.aero.circulation.Ma );
-            fcm = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cm' );
+            fcm = zeros(6, numel(Ma)); %TODO: permanent fcm matrix in wing.aero?
+            
+            % lift coefficient
             % fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, wing.state.aero.circulation.Ma );
-            fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cl' );
+            fcl = zeros(6, numel(Ma)); %TODO: permanent fcl matrix in wing.aero?
+            
+            %Extract analytic function param.
+            for i_seg = 1:numel(Ma)
+                i_af = wing.geometry.segments.type_local(i_seg)+1;
+                % Assume Ma is in same order as wing panels
+                if i_af~=0
+                    fcd(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cd' );
+                    fcm(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cm' );
+                    fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cl' );
+                end
+            end
+            
+            % drag coefficient
+            c_D(:) = airfoilAnalytic0515AlCd( fcd, rad2deg(wing.state.aero.circulation.alpha_eff ) );
+            
             [ c_L_alpha, alpha_0 ] = airfoilAnalytic0515ClAlphaMax( fcl, wing.state.aero.circulation.Ma );
             f_st = airfoilDynStallFst( wing.state.aero.circulation.c_L, c_L_alpha, rad2deg( wing.state.aero.circulation.alpha_eff ) - alpha_0 );
             wing.state.aero.coeff_loc.c_m_airfoil(:) = mean( airfoilAnalyticBlCm( fcm, f_st, wing.state.aero.circulation.c_L ), 3 );

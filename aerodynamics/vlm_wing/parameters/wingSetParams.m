@@ -41,15 +41,23 @@ end
 % if it is different... and so on.
 num_section = length(prm.section(:,1));
 prm.section_type = zeros(1,num_section);
-for i = 2:num_section
-    for j = 1:i-1
-        if all( prm.section(i,:) == prm.section(j,:) )
-            prm.section_type(i) = prm.section_type(j);
-            break;
-        elseif j == i-1
-            prm.section_type(i) = prm.section_type(i-1) + 1;
-        end
-    end
-end
+% for i = 2:num_section
+%     for j = 1:i-1
+%         if all( prm.section(i,:) == prm.section(j,:) )
+%             prm.section_type(i) = prm.section_type(j);
+%             break;
+%         elseif j == i-1
+%             prm.section_type(i) = prm.section_type(i-1) + 1;
+%         end
+%     end
+% end
+
+% Modification DC 8/2025: Not clear what the intent here was, but I assume
+% section_type should be an index pointing to the relevant airfoil; the
+% method above assumes they are always in order, regardless of name. 
+% Instead, we can use unique, and subtract 1 to keep the same convention:
+[~,~, section_type_tmp] = unique(prm.section, 'rows');
+prm.section_type = section_type_tmp' - 1;
+
 
 end

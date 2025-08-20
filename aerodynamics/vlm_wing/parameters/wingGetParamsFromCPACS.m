@@ -116,9 +116,19 @@ prm.flap_depth          = cntrl_prm.flap_depth;
 
 prm.control_input_index = cntrl_prm.control_input_index;
 
-section                 = cell(length(prm.eta_segments_device),1);
-section(:)              = {cntrl_prm.section};
-prm.section             = char(section(1:end-1));
+section                 = cell(length(prm.eta_segments_device)-1,1);
+if iscell(cntrl_prm.section) && (numel(cntrl_prm.section) == numel(section))
+    % Airfoil specified for all segments
+    section             = cntrl_prm.section(:);
+elseif ischar(cntrl_prm.section) || (iscell(cntrl_prm.section) && numel(cntrl_prm.section) == 1)
+    % Only one is specified, and is applied to all segments
+    if ischar(cntrl_prm.section)
+        section(:)      = {cntrl_prm.section};
+    else
+        section(:)      =  cntrl_prm.section;
+    end 
+end
+prm.section             = char(section(1:end));
 
 actuator_2_type         = cell(length(cntrl_prm.actuator_2_type),1);
 actuator_2_type(:)      = {cntrl_prm.actuator_2_type};

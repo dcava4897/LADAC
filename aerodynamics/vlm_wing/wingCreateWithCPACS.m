@@ -166,23 +166,42 @@ wing.state = wingCreateState( wing.params.num_actuators, wing.n_panel, wing.geom
 wing.state.external.atmosphere = isAtmosphere(alt);
 
 %% set airfoil aerodynamics
-wing.airfoil.simple = airfoilAnalyticSimpleInit();
+
+% Modified DC 8/2025: loads one airfoil for each entry in
+% wing.params.section (instead of just one for whole wing)
+% Assumes whole wing is either analytic or simple.
+% TODO: consider only unique entries? may require some indices for coordination
+% TODO: consider mixed-type wings? requires changing 'airfoil_method'
+    
 if contains( wing.params.section(1,:), 'airfoilAnalytic0515' )
-    wing.airfoil.analytic = airfoilAnalytic0515LoadParams(wing.params.section(1,:));
+    for i_af = 1:size(wing.params.section,1)
+        wing.airfoil(i_af,1).simple   = airfoilAnalyticSimpleInit();
+        wing.airfoil(i_af,1).analytic = airfoilAnalytic0515LoadParams(wing.params.section(i_af,:));
+    end
     airfoil_method = 'analytic';
 elseif contains( wing.params.section(1,:), 'airfoilAnalyticSimple' )
-    wing.airfoil.analytic = airfoilAnalytic0515LoadParams( 'airfoilAnalytic0515_params_empty' );
-    wing.airfoil.simple = airfoilAnalyticSimpleLoadParams(wing.airfoil.simple,wing.params.section(1,:));
+    for i_af = 1:size(wing.params.section,1)
+        wing.airfoil(i_af,1).simple = airfoilAnalyticSimpleInit();
+        wing.airfoil(i_af,1).analytic = airfoilAnalytic0515LoadParams( 'airfoilAnalytic0515_params_empty' );
+        wing.airfoil(i_af,1).simple = airfoilAnalyticSimpleLoadParams(wing.airfoil(i_af).simple,wing.params.section(i_af,:));
+    end
     airfoil_method = 'simple';
 else
     error('airfoil section not specified correctly');
 end
 
+% Note 8/25: Now that airfoils can be specified panel-by-panel, actuators
+% could be, too. For now maintained equal, as before.
+
 if strcmp( wing.params.actuator_2_type(1,:), 'none' )
-    wing.airfoil.micro_tab = airfoilMicroTabLoadParams( 'airfoilMicroTab_params_empty' );
+    for i_af = 1:length(wing.airfoil)
+        wing.airfoil(i_af,1).micro_tab = airfoilMicroTabLoadParams( 'airfoilMicroTab_params_empty' );
+    end
     actuator_2_type = 'none';
 elseif contains( wing.params.actuator_2_type(1,:), 'airfoilMicroTab' )
-    wing.airfoil.micro_tab = airfoilMicroTabLoadParams(wing.params.actuator_2_type(1,:));
+    for i_af = 1:length(wing.airfoil)
+        wing.airfoil(i_af,1).micro_tab = airfoilMicroTabLoadParams(wing.params.actuator_2_type(1,:));
+    end
     actuator_2_type = 'micro-tab';
 elseif contains( wing.params.actuator_2_type(1,:), 'custom' )
     actuator_2_type = 'custom';

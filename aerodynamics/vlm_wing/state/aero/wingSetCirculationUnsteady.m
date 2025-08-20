@@ -144,7 +144,14 @@ while ~converged && wing.state.aero.circulation.num_iter < num_iter_max
             case 'analytic'
                 % clean airfoil lift
                 % fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, wing.state.aero.circulation.Ma );
-                fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cl' );
+                fcl = zeros(6, numel(Ma)); %TODO: permanent fcl matrix in wing.aero?
+                for i_seg = 1:numel(Ma)
+                    i_af = wing.geometry.segments.type_local(i_seg)+1;
+                    % Assume Ma is in same order as wing panels
+                    if i_af~=0
+                        fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cl' );
+                    end
+                end
                 wing.state.aero.circulation.cla = rad2deg(fcl(2,:));
                 
                 % get points on lift curve

@@ -19,7 +19,14 @@ switch wing_config.airfoil_method
     case 'analytic'
         % get coefficients of analytic functions for different Mach numbers
         % fcl = airfoilAnalytic0515Ma( wing_airfoil.analytic.wcl, wing_state.aero.circulation.Ma );
-        fcl = airfoilAnalytic0515Ma( wing_airfoil.analytic, wing_state.aero.circulation.Ma, 'cl' );
+        fcl = zeros(6, numel(Ma)); %TODO: permanent fcl matrix in wing.aero?
+        for i_seg = 1:numel(Ma)
+            i_af = wing.geometry.segments.type_local(i_seg)+1;
+            % Assume Ma is in same order as wing panels
+            if i_af~=0
+                fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cl' );
+            end
+        end
         % get points on lift curve
         [c_L_alpha_deg,alpha_0] = airfoilAnalytic0515ClAlphaMax( fcl, wing_state.aero.circulation.Ma );
         c_L_alpha = rad2deg(c_L_alpha_deg);

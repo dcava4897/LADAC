@@ -55,9 +55,21 @@ switch wing.config.airfoil_method
 %         fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, wing.state.aero.circulation.Ma );
 %         fcd = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcd, wing.state.aero.circulation.Ma );
 %         fcm = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcm, wing.state.aero.circulation.Ma );
-        fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cl' );
-        fcd = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cd' );
-        fcm = airfoilAnalytic0515Ma( wing.airfoil.analytic, wing.state.aero.circulation.Ma, 'cm' );
+
+        fcd = zeros(6, numel(Ma)); %TODO: permanent fcd matrix in wing.aero?
+        fcm = zeros(6, numel(Ma)); %TODO: permanent fcm matrix in wing.aero?
+        fcl = zeros(6, numel(Ma)); %TODO: permanent fcl matrix in wing.aero?
+
+        %Extract analytic function param.
+        for i_seg = 1:numel(Ma)
+            i_af = wing.geometry.segments.type_local(i_seg)+1;
+            % Assume Ma is in same order as wing panels
+            if i_af~=0
+                fcd(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cd' );
+                fcm(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cm' );
+                fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cl' );
+            end
+        end
         
         if ~wing.config.is_stall
             x_ac(:) = airfoilAnalyticBlXac( fcm );

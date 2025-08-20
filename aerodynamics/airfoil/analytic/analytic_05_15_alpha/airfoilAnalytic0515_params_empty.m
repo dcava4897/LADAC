@@ -29,3 +29,11 @@ airfoil.wcm  = [ zeros(1,5), zeros(1,2*1), zeros(1,2*5) ];
 airfoil.ncm = 1;
 % number of neural network outputs
 airfoil.ocm = 5;
+
+%%
+% Added info for expanded functionality:
+airfoil.info.liftCurve = @airfoilAnalytic0515AlCl;
+airfoil.info.dragCurve = @airfoilAnalytic0515AlCdNorm;
+airfoil.info.momentCurve = @airfoilAnalyticBlCm;
+
+airfoil.type = 'neun';
