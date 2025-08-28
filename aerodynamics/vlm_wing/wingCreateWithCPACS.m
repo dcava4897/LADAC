@@ -255,7 +255,8 @@ end
 custom_path = which('wingCustomActuator','-all');
 if length(custom_path) > 1
     error('Custom actuator was not specified correctly.');
+elseif length(custom_path) == 1
+    wing = wingCustomActuatorSetup(wing); 
 end
-wing = wingCustomActuatorSetup(wing);
 
 end
