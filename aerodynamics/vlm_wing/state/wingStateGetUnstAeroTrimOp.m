@@ -1,4 +1,4 @@
-function [x,X,z,z2] = wingStateGetUnstAeroTrimOp( wing_state, wing_airfoil, wing_config )
+function [x,X,z,z2] = wingStateGetUnstAeroTrimOp( wing_state, wing_airfoil, wing_config , wing_seg_type)
 
 % Disclaimer:
 %   SPDX-License-Identifier: GPL-3.0-only
@@ -6,6 +6,10 @@ function [x,X,z,z2] = wingStateGetUnstAeroTrimOp( wing_state, wing_airfoil, wing
 %   Copyright (C) 2020-2022 Yannic Beyer
 %   Copyright (C) 2022 TU Braunschweig, Institute of Flight Guidance
 % *************************************************************************
+
+% wing_state = wing.state;
+% wing_airfoil = wing.airfoil;
+% wing_config = wing.config;
 
 %% x (from wingSetUnstAeroState and unstAirfoilAeroFast)
 
@@ -19,12 +23,12 @@ switch wing_config.airfoil_method
     case 'analytic'
         % get coefficients of analytic functions for different Mach numbers
         % fcl = airfoilAnalytic0515Ma( wing_airfoil.analytic.wcl, wing_state.aero.circulation.Ma );
-        fcl = zeros(6, numel(Ma)); %TODO: permanent fcl matrix in wing.aero?
-        for i_seg = 1:numel(Ma)
-            i_af = wing.geometry.segments.type_local(i_seg)+1;
+        fcl = zeros(6, numel(wing_state.aero.circulation.Ma)); %TODO: permanent fcl matrix in wing.aero?
+        for i_seg = 1:numel(wing_state.aero.circulation.Ma)
+            i_af = wing_state.geometry.segments.type_local(i_seg)+1;
             % Assume Ma is in same order as wing panels
             if i_af~=0
-                fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cl' );
+                fcl(1:6,i_seg) = airfoilAnalytic0515Ma( wing_airfoil(i_af).analytic, wing_state.aero.circulation.Ma(i_seg), 'cl' );
             end
         end
         % get points on lift curve
@@ -36,10 +40,10 @@ switch wing_config.airfoil_method
         alpha_0_rad = deg2rad(alpha_0);
     case 'simple'
         % effective angle of attack for an equivalent uncambered airfoil
-        alpha_inf_0 = wing_state.aero.circulation.alpha_eff - wing_airfoil.simple.alpha_0;
-        alpha_inf_0_nc = wing_state.aero.circulation.alpha_inf - wing_airfoil.simple.alpha_0;
+        alpha_inf_0 = wing_state.aero.circulation.alpha_eff - wing_airfoil(1).simple.alpha_0;
+        alpha_inf_0_nc = wing_state.aero.circulation.alpha_inf - wing_airfoil(1).simple.alpha_0;
         % clean airfoil coefficients
-        c_L_alpha = wing_airfoil.simple.c_L_alpha ./ ...
+        c_L_alpha = wing_airfoil(1).simple.c_L_alpha ./ ...
             sqrtReal(1-wing_state.aero.circulation.Ma.^2);
 end
 

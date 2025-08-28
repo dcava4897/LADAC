@@ -56,18 +56,18 @@ switch wing.config.airfoil_method
 %         fcd = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcd, wing.state.aero.circulation.Ma );
 %         fcm = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcm, wing.state.aero.circulation.Ma );
 
-        fcd = zeros(6, numel(Ma)); %TODO: permanent fcd matrix in wing.aero?
-        fcm = zeros(6, numel(Ma)); %TODO: permanent fcm matrix in wing.aero?
-        fcl = zeros(6, numel(Ma)); %TODO: permanent fcl matrix in wing.aero?
+        fcd = zeros(6, numel(wing.state.aero.circulation.Ma)); %TODO: permanent fcd matrix in wing.aero?
+        fcm = zeros(6, numel(wing.state.aero.circulation.Ma)); %TODO: permanent fcm matrix in wing.aero?
+        fcl = zeros(6, numel(wing.state.aero.circulation.Ma)); %TODO: permanent fcl matrix in wing.aero?
 
         %Extract analytic function param.
-        for i_seg = 1:numel(Ma)
+        for i_seg = 1:numel(wing.state.aero.circulation.Ma)
             i_af = wing.geometry.segments.type_local(i_seg)+1;
             % Assume Ma is in same order as wing panels
             if i_af~=0
-                fcd(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cd' );
-                fcm(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cm' );
-                fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cl' );
+                fcd(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, wing.state.aero.circulation.Ma(i_seg), 'cd' );
+                fcm(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, wing.state.aero.circulation.Ma(i_seg), 'cm' );
+                fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, wing.state.aero.circulation.Ma(i_seg), 'cl' );
             end
         end
         
@@ -128,19 +128,19 @@ switch wing.config.airfoil_method
             
     case 'simple'
 
-        alpha_eff = (alpha_eff-wing.airfoil.simple.alpha_0) ...
-            ./cos(wing.interim_results.sweep) + wing.airfoil.simple.alpha_0;
+        alpha_eff = (alpha_eff-wing.airfoil(1).simple.alpha_0) ...
+            ./cos(wing.interim_results.sweep) + wing.airfoil(1).simple.alpha_0;
         
         % effective angle of attack for an equivalent uncambered airfoil
-        alpha_inf_0(:) = alpha_eff - wing.airfoil.simple.alpha_0;
-        alpha_inf_nc = wing.state.aero.circulation.alpha_inf - wing.airfoil.simple.alpha_0;
+        alpha_inf_0(:) = alpha_eff - wing.airfoil(1).simple.alpha_0;
+        alpha_inf_nc = wing.state.aero.circulation.alpha_inf - wing.airfoil(1).simple.alpha_0;
 
         % clean airfoil coefficients
-        c_L_alpha = wing.airfoil.simple.c_L_alpha ./ ...
+        c_L_alpha = wing.airfoil(1).simple.c_L_alpha ./ ...
             sqrtReal(1-powerFast(wing.state.aero.circulation.Ma,2));
-        x_ac = wing.airfoil.simple.x_ac;
+        x_ac = wing.airfoil(1).simple.x_ac;
         
-        wing.state.aero.circulation.cla(:) = wing.airfoil.simple.c_L_alpha;
+        wing.state.aero.circulation.cla(:) = wing.airfoil(1).simple.c_L_alpha;
         
         if wing.config.is_wagner
             [ wing.state.aero.unsteady.c_L_c, wing.state.aero.unsteady.c_m_c, ...
@@ -157,9 +157,9 @@ switch wing.config.airfoil_method
         end
         
         wing.state.aero.unsteady.c_m_c = wing.state.aero.unsteady.c_m_c ...
-            + wing.airfoil.simple.c_m0;
+            + wing.airfoil(1).simple.c_m0;
             
-        c_D_st = airfoilAnalyticSimpleCd( wing.airfoil.simple, alpha_inf_0 );
+        c_D_st = airfoilAnalyticSimpleCd( wing.airfoil(1).simple, alpha_inf_0 );
         c_L_unst = wing.state.aero.unsteady.c_L_c + wing.state.aero.unsteady.c_L_nc;
         wing.state.aero.unsteady.c_D(:) = unstAirfoilAeroCd( c_D_st, c_L_unst, ...
             alpha_inf_0, wing.state.aero.unsteady.alpha_eff );

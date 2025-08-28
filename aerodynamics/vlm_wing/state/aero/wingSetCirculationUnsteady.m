@@ -144,12 +144,12 @@ while ~converged && wing.state.aero.circulation.num_iter < num_iter_max
             case 'analytic'
                 % clean airfoil lift
                 % fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, wing.state.aero.circulation.Ma );
-                fcl = zeros(6, numel(Ma)); %TODO: permanent fcl matrix in wing.aero?
-                for i_seg = 1:numel(Ma)
+                fcl = zeros(6, numel(wing.state.aero.circulation.Ma)); %TODO: permanent fcl matrix in wing.aero?
+                for i_seg = 1:numel(wing.state.aero.circulation.Ma)
                     i_af = wing.geometry.segments.type_local(i_seg)+1;
                     % Assume Ma is in same order as wing panels
                     if i_af~=0
-                        fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cl' );
+                        fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, wing.state.aero.circulation.Ma(i_seg), 'cl' );
                     end
                 end
                 wing.state.aero.circulation.cla = rad2deg(fcl(2,:));
@@ -173,12 +173,12 @@ while ~converged && wing.state.aero.circulation.num_iter < num_iter_max
                 end
             case 'simple'
                 % clean airfoil + flap lift
-                wing.state.aero.circulation.alpha_eff = (alpha_eff_unswept-deg2rad(wing.airfoil.simple.alpha_0))...
-                    ./cos(wing.interim_results.sweep) + deg2rad(wing.airfoil.simple.alpha_0);
+                wing.state.aero.circulation.alpha_eff = (alpha_eff_unswept-deg2rad(wing.airfoil(1).simple.alpha_0))...
+                    ./cos(wing.interim_results.sweep) + deg2rad(wing.airfoil(1).simple.alpha_0);
                 for i = 1:n_panel_x
-                    c_L_visc(:,:,i) = airfoilAnalyticSimpleCl( wing.airfoil.simple, ...
+                    c_L_visc(:,:,i) = airfoilAnalyticSimpleCl( wing.airfoil(1).simple, ...
                         wing.state.aero.circulation.alpha_eff(:,:,i), wing.state.aero.circulation.Ma );
-                    wing.state.aero.circulation.cla(:) = wing.airfoil.simple.c_L_alpha;
+                    wing.state.aero.circulation.cla(:) = wing.airfoil(1).simple.c_L_alpha;
                 end
         end
         % flap lift
@@ -192,7 +192,7 @@ while ~converged && wing.state.aero.circulation.num_iter < num_iter_max
             case 'micro-tab'
                 % 2nd actuator lift
                 [ c_L_act2(:), ~, ~ ] = airfoilMicroTabDeltaCoeff( ...
-                    wing.airfoil.micro_tab, wing.state.aero.circulation, ...
+                    wing.airfoil(1).micro_tab, wing.state.aero.circulation, ...
                     wing.state.actuators.segments.pos(2,:) );
         end
         % total lift

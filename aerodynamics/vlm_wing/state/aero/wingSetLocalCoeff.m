@@ -51,24 +51,24 @@ if ~wing.config.is_unsteady
         case 'analytic'
             % Drag coefficient
             % fcd = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcd, wing.state.aero.circulation.Ma );
-            fcd = zeros(6, numel(Ma)); %TODO: permanent fcd matrix in wing.aero?
+            fcd = zeros(6, numel(wing.state.aero.circulation.Ma)); %TODO: permanent fcd matrix in wing.aero?
             
             % local airfoil pitching moment coefficient w.r.t. local c/4
 %             fcm = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcm, wing.state.aero.circulation.Ma );
-            fcm = zeros(6, numel(Ma)); %TODO: permanent fcm matrix in wing.aero?
+            fcm = zeros(6, numel(wing.state.aero.circulation.Ma)); %TODO: permanent fcm matrix in wing.aero?
             
             % lift coefficient
             % fcl = airfoilAnalytic0515Ma( wing.airfoil.analytic.wcl, wing.state.aero.circulation.Ma );
-            fcl = zeros(6, numel(Ma)); %TODO: permanent fcl matrix in wing.aero?
+            fcl = zeros(6, numel(wing.state.aero.circulation.Ma)); %TODO: permanent fcl matrix in wing.aero?
             
             %Extract analytic function param.
-            for i_seg = 1:numel(Ma)
+            for i_seg = 1:numel(wing.state.aero.circulation.Ma)
                 i_af = wing.geometry.segments.type_local(i_seg)+1;
                 % Assume Ma is in same order as wing panels
                 if i_af~=0
-                    fcd(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cd' );
-                    fcm(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cm' );
-                    fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, Ma(i_seg), 'cl' );
+                    fcd(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, wing.state.aero.circulation.Ma(i_seg), 'cd' );
+                    fcm(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, wing.state.aero.circulation.Ma(i_seg), 'cm' );
+                    fcl(:,i_seg) = airfoilAnalytic0515Ma( wing.airfoil(i_af).analytic, wing.state.aero.circulation.Ma(i_seg), 'cl' );
                 end
             end
             
@@ -80,10 +80,10 @@ if ~wing.config.is_unsteady
             wing.state.aero.coeff_loc.c_m_airfoil(:) = mean( airfoilAnalyticBlCm( fcm, f_st, wing.state.aero.circulation.c_L ), 3 );
         case 'simple'
             % drag coefficient
-            c_D(:) = airfoilAnalyticSimpleCd( wing.airfoil.simple, ...
+            c_D(:) = airfoilAnalyticSimpleCd( wing.airfoil(1).simple, ...
                 wing.state.aero.circulation.alpha_eff );
             % local airfoil pitching moment coefficient w.r.t. local c/4
-            wing.state.aero.coeff_loc.c_m_airfoil = mean( airfoilAnalyticSimpleCm(wing.airfoil.simple,wing.state.aero.circulation.c_L), 3 );
+            wing.state.aero.coeff_loc.c_m_airfoil = mean( airfoilAnalyticSimpleCm(wing.airfoil(1).simple,wing.state.aero.circulation.c_L), 3 );
     end
     
     % quasi-steady pitch damping derived from [2], eq. (A15) and (A13)
@@ -109,7 +109,7 @@ if ~wing.config.is_unsteady
             % do nothing
         case 'micro-tab'
             [ ~, c_D_act2(:), c_m_act2(:) ] = airfoilMicroTabDeltaCoeff( ...
-                wing.airfoil.micro_tab, wing.state.aero.circulation, ...
+                wing.airfoil(1).micro_tab, wing.state.aero.circulation, ...
                 wing.state.actuators.segments.pos(2,:) );
     end
     for i = 1:n_panel_x
