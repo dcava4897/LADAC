@@ -36,4 +36,4 @@ airfoil.info.liftCurve = @airfoilAnalytic0515AlCl;
 airfoil.info.dragCurve = @airfoilAnalytic0515AlCdNorm;
 airfoil.info.momentCurve = @airfoilAnalyticBlCm;
 
-airfoil.type = 'neun';
+airfoil.type = 'neurln';

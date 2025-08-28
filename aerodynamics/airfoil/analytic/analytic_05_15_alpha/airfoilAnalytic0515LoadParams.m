@@ -36,31 +36,52 @@ end
 %
 
 switch airfoil.type
-    case 'neun'
+    case 'neurln'
         airfoil.wcl = mergeOutputLayer( airfoil.wcl, airfoil.ncl, airfoil.ocl );
         airfoil.wcd = mergeOutputLayer( airfoil.wcd, airfoil.ncd, airfoil.ocd );
         airfoil.wcm = mergeOutputLayer( airfoil.wcm, airfoil.ncm, airfoil.ocm );
+        
+        % Add empty 'interp' fields to avoid 'Mixed field types' error
+        airfoil.fclv = zeros(6,9);
+        airfoil.fcdv = zeros(6,9);
+        airfoil.fcmv = zeros(5,9);
+        airfoil.grid = struct('Mach', zeros(1,9));
     case 'interp'
         %TODO: add ability to interpolate between 2 airfoils?
         
         % To improve interpolation speed (by up to 50%, in theory!), we
         % store the matrices as griddedInterpolant cell vectors. 
-        for i_par = 1:size(airfoil.fclv,1)
-            airfoil.Fclv{i_par,1}  = griddedInterpolant(airfoil.grid.ScheduledVariables.Mach, airfoil.fclv(i_par,:),...
-                                'linear', 'nearest');
-        end
-        for i_par = 1:size(airfoil.fcmv,1)
-            airfoil.Fcmv{i_par,1}  = griddedInterpolant(airfoil.grid.ScheduledVariables.Mach, airfoil.fcmv(i_par,:),...
-                                'linear', 'nearest');
-        end
-        for i_par = 1:size(airfoil.fcdv,1)
-            airfoil.Fcdv{i_par,1}  = griddedInterpolant(airfoil.grid.ScheduledVariables.Mach, airfoil.fcdv(i_par,:),...
-                                'linear', 'nearest');
-        end
+        % Note: removed for now because griddedInterpolant is not
+        % compatible with code generation
+%         for i_par = 1:size(airfoil.fclv,1)
+%             airfoil.Fclv{i_par,1}  = griddedInterpolant(airfoil.grid.ScheduledVariables.Mach, airfoil.fclv(i_par,:),...
+%                                 'linear', 'nearest');
+%         end
+%         for i_par = 1:size(airfoil.fcmv,1)
+%             airfoil.Fcmv{i_par,1}  = griddedInterpolant(airfoil.grid.ScheduledVariables.Mach, airfoil.fcmv(i_par,:),...
+%                                 'linear', 'nearest');
+%         end
+%         for i_par = 1:size(airfoil.fcdv,1)
+%             airfoil.Fcdv{i_par,1}  = griddedInterpolant(airfoil.grid.ScheduledVariables.Mach, airfoil.fcdv(i_par,:),...
+%                                 'linear', 'nearest');
+%         end
         
-        airfoil = rmfield(airfoil, {'fclv', 'fcmv', 'fcdv'});
+%         airfoil = rmfield(airfoil, {'fclv', 'fcmv', 'fcdv'});
+
+        % Add empty neural network fields to avoid mixed types error
+        airfoilAnalytic0515_params_empty; %Should simple add 'empty' neun fields + change type to neun
+        airfoil.type = 'interp';
+        
+        airfoil.wcl = mergeOutputLayer( airfoil.wcl, airfoil.ncl, airfoil.ocl );
+        airfoil.wcd = mergeOutputLayer( airfoil.wcd, airfoil.ncd, airfoil.ocd );
+        airfoil.wcm = mergeOutputLayer( airfoil.wcm, airfoil.ncm, airfoil.ocm );
+        
+        airfoil.grid = struct('Mach', airfoil.grid.ScheduledVariables.Mach);
 end
 
+%Temporary fix: Simulink not compatible with function handles, removed here
+airfoil.info = rmfield(airfoil.info, {'liftCurve', 'momentCurve', 'dragCurve'});
+airfoil = orderfields(airfoil);
 end
 
 

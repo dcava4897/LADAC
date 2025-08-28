@@ -53,13 +53,13 @@ if numel(varargin) == 2 %legacy input mode
     Ma = varargin{2};
     coeff_type = '';
     
-    fun_type = 'neun';
+    fun_type = 'neurln';
 else
     airfoil_anl = varargin{1};
     Ma = varargin{2};
     coeff_type = varargin{3};
     
-    weights = []; % Must be defined regardless
+%     weights = struct; % Must be defined regardless
     
     fun_type = airfoil_anl.type;
     
@@ -71,11 +71,14 @@ end
 num_inputs = length(Ma);
 Ma = Ma(:)';
 
+%for code gen, fMa must always be assigned
+fMa = zeros(6,numel(Ma));
+
 switch fun_type 
-    case 'neun'
+    case 'neurln'
         
         %Select correct coefficient type:
-        if isempty(weights)
+        if ~isempty(coeff_type) %If it is empty, we are assuming legacy input mode
             switch coeff_type
                 case 'cl'
                     weights = airfoil_anl.wcl;
@@ -86,6 +89,8 @@ switch fun_type
             end
         end
         
+        idx_row_max = size(weights.weights2,1); %For codegen, fMa must have predetermined # of rows
+        
         bias_in = ones(1,num_inputs);
 
         % forward propagation
@@ -93,8 +98,11 @@ switch fun_type
 
         outputHiddenLayer = tanh( inputHiddenLayer );
 
-        fMa = weights.weights2 * [ outputHiddenLayer; bias_in ];
+        fMa(1:idx_row_max, :)  = weights.weights2 * [ outputHiddenLayer; bias_in ];
     case 'interp'
+        
+        %Note: griddedInterpolant not compatible with Simulink code
+        %generation, removed for now. 
         % Note: The method of interpolating below (griddedInterpolants in
         % cell arrays, evaluated one at a time) has been tested to work
         % faster than either interp1 or a cellfun implementation.
@@ -102,20 +110,40 @@ switch fun_type
         % dimension, e.g. 2-D matrices interpolated over a 1-D grid (like
         % interp1). Future work could take advantage of this.
         
+%         switch coeff_type
+%             case 'cl'
+%                 field_name = 'Fclv';
+%             case 'cm'
+%                 field_name = 'Fcmv';
+%             case 'cd'
+%                 field_name = 'Fcdv';
+%         end
+%         
+%         fMa = zeros(numel(airfoil_anl.(field_name)),num_inputs);
+%         for i_fun = 1:numel(airfoil_anl.(field_name))
+%             fMa(i_fun,:) = airfoil_anl.(field_name){i_fun}(Ma);
+%         end
+%         
+        % Normal interpolation
         switch coeff_type
             case 'cl'
-                field_name = 'Fclv';
+                field_name = 'fclv';
             case 'cm'
-                field_name = 'Fcmv';
+                field_name = 'fcmv';
             case 'cd'
-                field_name = 'Fcdv';
+                field_name = 'fcdv';
         end
         
-        fMa = zeros(numel(airfoil_anl.(field_name)),num_inputs);
-        for i_fun = 1:numel(airfoil_anl.(field_name))
-            fMa(i_fun,:) = airfoil_anl.(field_name){i_fun}(Ma);
-        end
+        idx_row_max = size(airfoil_anl.(field_name),1);
         
-        
+        %Quick fix: bound Ma to the avaailable grid manually, since interp1
+        %cannot mix 'nearest' extrapolation with linear interpolation
+        Ma = max(Ma, airfoil_anl.grid.Mach(1));
+        Ma = min(Ma, airfoil_anl.grid.Mach(end));
+        fMa(1:idx_row_max, :) = interp1( airfoil_anl.grid.Mach , airfoil_anl.(field_name)', Ma, 'linear', 'extrap');
+           
+%     otherwise %for code gen, fMa must always be assigned
+%         fMa = zeros(6,numel(Ma));
+
 end
 end
