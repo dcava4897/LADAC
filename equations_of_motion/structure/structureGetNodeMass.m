@@ -24,6 +24,6 @@ function mass_vector = structureGetNodeMass( structure, idx )
 DOF = 6;
 % idx_M = 1+(idx-1)*DOF;
 idx_M = structure.idx_dof_struct(1+(idx-1)*DOF);
-mass_vector = diag( structure.M(idx_M,idx_M) )';
+mass_vector = full(diag( structure.M(idx_M,idx_M) )');
 
 end

@@ -21,6 +21,6 @@ function mass_total = structureGetTotalMass( structure )
 % n_nodes     = length( structure.M )/DOF;
 n_nodes     = length( structure.idx_node_struct );
 mass_vector = structureGetNodeMass( structure, [1:n_nodes] );
-mass_total = sum( mass_vector );
+mass_total  = full(sum( mass_vector ));
 
 end

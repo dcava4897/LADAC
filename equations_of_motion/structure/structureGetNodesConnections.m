@@ -29,9 +29,9 @@ if ~isempty(varargin)
     tol = varargin{1};
 end
 
-K = structure.K;
+K = structure.K(structure.idx_dof_struct,structure.idx_dof_struct);%structure.K;
 K_max = max(max(K));
-n_nodes = length( structure.xyz(1,:) );
+n_nodes = numel(structure.idx_node_struct);% length( structure.xyz(1,:) );
 DOF = 6;
 
 M = false( n_nodes, n_nodes );

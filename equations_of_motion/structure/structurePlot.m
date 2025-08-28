@@ -45,10 +45,10 @@ for i = 1:length(varargin)
         tol = varargin{i+1};
     end
 end
-
-n_nodes = length( structure.xyz(1,:) );
+xyz_struct = structure.xyz(:,structure.idx_node_struct);
+n_nodes = numel(structure.idx_node_struct);%length( structure.xyz(1,:) );
 M_int = structureGetNodesConnections( structure, tol );
-xyz_cg = structure.xyz + structureGetNodeCg(structure,1:size(structure.xyz,2));
+xyz_cg = xyz_struct + structureGetNodeCg(structure,1:n_nodes);   %1:size(structure.xyz,2));
 
 for i = 1:n_nodes
     % get indices of connected nodes
